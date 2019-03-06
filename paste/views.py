@@ -11,50 +11,37 @@ from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import mixins
+from rest_framework import generics
 
-class PasteList(APIView):
-    """
-    List all pastes, or create a new paste.
-    """
-    def get(self, request, format=None):
-        pastes = Paste.objects.all()
-        serializer = PasteSerializer(pastes, many=True)
-        return Response(serializer.data)
+class PasteList(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    generics.GenericAPIView
+):
+    queryset = Paste.objects.all()
+    serializer_class = PasteSerializer
 
-    def post(self, request, format=None):
-        serializer = PasteSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
-class PasteDetail(APIView):
-    """
-    Retrieve, update, or delete a paste instance.
-    """
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
 
-    def get_object(self, pk):
-        try:
-            return Paste.objects.get(pk=pk)
-        except Paste.DoesNotExist:
-            raise Http404
+class PasteDetail(
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    generics.GenericAPIView
+):
+    queryset = Paste.objects.all()
+    serializer_class = PasteSerializer
 
-    def get(self, request, pk, format=None):
-        paste = self.get_object(pk)
-        serializer = PasteSerializer(paste)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
 
-    def put(self, request, pk, format=None):
-        paste = self.get_object(pk)
-        serializer = PasteSerializer(paste, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        
-    def delete(self, request, pk, format=None):
-        paste = self.get_object(pk)
-        paste.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
