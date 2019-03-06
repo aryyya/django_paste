@@ -5,6 +5,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 from .models import Paste
 from .serializers import PasteSerializer
+from rest_framework.status import *
 
 @csrf_exempt
 def paste_list(request):
@@ -21,9 +22,9 @@ def paste_list(request):
         serializer = PasteSerializer(data=data)
         if (serializer.is_valid()):
             serializer.save()
-            return JsonResponse(serializer.data, status=201)
+            return JsonResponse(serializer.data, status=HTTP_201_CREATED)
         else:
-            return JsonResponse(serializer.errors, status=400)
+            return JsonResponse(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 @csrf_exempt
 def paste_detail(request, pk):
@@ -33,7 +34,7 @@ def paste_detail(request, pk):
     try:
         paste = Paste.objects.get(pk=pk)
     except Paste.DoesNotExist:
-        return HttpResponse(status=404)
+        return HttpResponse(status=HTTP_404_NOT_FOUND)
     
     if request.method == 'GET':
         serializer = PasteSerializer(paste)
@@ -46,8 +47,8 @@ def paste_detail(request, pk):
             serializer.save()
             return JsonResponse(serializer.data)
         else:
-            return JsonResponse(serializer.errors, status=400)
+            return JsonResponse(serializer.errors, status=HTTP_400_BAD_REQUEST)
     
     elif request.method == 'DELETE':
         paste.delete()
-        return HttpResponse(status=204)
+        return HttpResponse(status=HTTP_204_NO_CONTENT)
