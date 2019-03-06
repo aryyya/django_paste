@@ -1,16 +1,18 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.renderers import JSONRenderer
-from rest_framework.parsers import JSONParser
-from rest_framework import status
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
 from .models import Paste
 from .serializers import PasteSerializer
 
+from django.http import HttpResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
+
 @api_view(['GET', 'POST'])
-def paste_list(request):
+def paste_list(request, format=None):
     """
     List all code pastes, or create a new paste.
     """
@@ -28,7 +30,7 @@ def paste_list(request):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'PUT', 'DELETE'])
-def paste_detail(request, pk):
+def paste_detail(request, pk, format=None):
     """
     Retrieve, update, or delete a code paste.
     """

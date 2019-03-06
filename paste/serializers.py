@@ -1,5 +1,6 @@
-from rest_framework import serializers
 from .models import Paste, LANGUAGE_CHOICES, STYLE_CHOICES
+
+from rest_framework import serializers
 
 class PasteSerializer(serializers.ModelSerializer):
     class Meta:
