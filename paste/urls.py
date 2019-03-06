@@ -5,8 +5,8 @@ from django.urls import path
 from rest_framework.urlpatterns import format_suffix_patterns
 
 urlpatterns = [
-    path('paste/', views.paste_list),
-    path('paste/<int:pk>/', views.paste_detail)
+    path('paste/', views.PasteList.as_view()),
+    path('paste/<int:pk>/', views.PasteDetail.as_view())
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

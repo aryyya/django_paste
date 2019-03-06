@@ -1,7 +1,7 @@
 from .models import Paste
 from .serializers import PasteSerializer
 
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
@@ -10,18 +10,18 @@ from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
-@api_view(['GET', 'POST'])
-def paste_list(request, format=None):
+class PasteList(APIView):
     """
-    List all code pastes, or create a new paste.
+    List all pastes, or create a new paste.
     """
-    if request.method == 'GET':
+    def get(self, request, format=None):
         pastes = Paste.objects.all()
         serializer = PasteSerializer(pastes, many=True)
         return Response(serializer.data)
 
-    elif request.method == 'POST':
+    def post(self, request, format=None):
         serializer = PasteSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -29,28 +29,32 @@ def paste_list(request, format=None):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def paste_detail(request, pk, format=None):
+class PasteDetail(APIView):
     """
-    Retrieve, update, or delete a code paste.
+    Retrieve, update, or delete a paste instance.
     """
-    try:
-        paste = Paste.objects.get(pk=pk)
-    except Paste.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    
-    if request.method == 'GET':
+
+    def get_object(self, pk):
+        try:
+            return Paste.objects.get(pk=pk)
+        except Paste.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        paste = self.get_object(pk)
         serializer = PasteSerializer(paste)
-        return Response(serializer.data)
-    
-    elif request.method == 'PUT':
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, pk, format=None):
+        paste = self.get_object(pk)
         serializer = PasteSerializer(paste, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    elif request.method == 'DELETE':
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+    def delete(self, request, pk, format=None):
+        paste = self.get_object(pk)
         paste.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
