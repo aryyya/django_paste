@@ -1,5 +1,6 @@
 from .models import Paste
 from .serializers import PasteSerializer, UserSerializer
+from .permissions import IsOwnerOrReadOnly
 
 from django.contrib.auth.models import User
 
@@ -17,7 +18,10 @@ class PasteList(generics.ListCreateAPIView):
 class PasteDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Paste.objects.all()
     serializer_class = PasteSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly,
+        IsOwnerOrReadOnly
+    )
 
 class UserList(generics.ListAPIView):
     queryset = User.objects.all()
