@@ -4,16 +4,17 @@ from django.contrib.auth.models import User
 
 from rest_framework import serializers
 
-class PasteSerializer(serializers.ModelSerializer):
+class PasteSerializer(serializers.HyperlinkedModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
+    highlight = serializers.HyperlinkedIdentityField(view_name='paste-highlight', format='html')
 
     class Meta:
         model = Paste
-        fields = ('id', 'title', 'code', 'linenos', 'language', 'style', 'owner')
+        fields = ('url', 'id', 'highlight', 'owner', 'title', 'code', 'linenos', 'language', 'style')
 
-class UserSerializer(serializers.ModelSerializer):
-    pastes = serializers.PrimaryKeyRelatedField(many=True, queryset=Paste.objects.all())
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    pastes = serializers.HyperlinkedRelatedField(many=True, view_name='paste-detail', read_only=True)
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'pastes')
+        fields = ('url', 'id', 'username', 'pastes')
